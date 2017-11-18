@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Trips Overview</title>
+		<script type="text/javascript" src="http://d3js.org/d3.v3.js"></script>
+		<style type="text/css">
+		body { font: 12px Arial;}
+
+		path { 
+		    stroke: steelblue;
+		    stroke-width: 2;
+		    fill: none;
+		}
+
+		.axis path,
+		.axis line {
+		    fill: none;
+		    stroke: grey;
+		    stroke-width: 1;
+		    shape-rendering: crispEdges;
+		}
+		.area { 
+			fill: lightsteelblue; 
+			stroke-width: 0;
+		}
+
+		div.tooltip {	
+		    position: absolute;			
+		    text-align: center;			
+		    width: 100px;					
+		    height: 50px;					
+		    padding: 2px;				
+		    font: 12px sans-serif;		
+		    background: lightsteelblue;	
+ 			border: 1px solid black;	
+		    border-radius: 8px;			
+		    pointer-events: none;			
+		}
+
+		.checkbox {
+			position: absolute;
+			width: 20px;					
+		    height: 16px;
+		    fill: grey;
+		}
+
+		</style>
+
+	</head>
+	<body>
+
+		<script>
+
+        // Defination section
+//-------------------------------------------------------------------------------------------------------------------------------
+		// Set the dimensions of the canvas / graph
+		var margin = {top: 60, right: 80, bottom: 115, left: 75},
+		    width = 1500 - margin.left - margin.right,
+		    height = 500 - margin.top - margin.bottom;
+
+		// Parse the date / time
+		var parseDate = d3.time.format("%Y/%m/%d").parse;
+		var formatTime = d3.time.format("%d-%B");
+
+
+		// Set the ranges
+		var x = d3.time.scale().range([0, width]);
+		var y = d3.scale.linear().range([height, 0]);
+		var yT = d3.scale.linear().range([height, 0]); // Temperature y
+		//var yMA = d3.scale.linear().range([height, 0]); // Moving average
+
+		// Define the axes
+		var xAxis = d3.svg.axis().scale(x)
+		    .orient("bottom").ticks(15)
+		    .tickFormat(d3.time.format("%Y-%m-%d")); // tickFormat
+
+		var yAxis = d3.svg.axis().scale(y)
+		    .orient("left").ticks(5);
+
+	    var yTAxis = d3.svg.axis().scale(yT)
+		    .orient("right").ticks(5);
+
+
+    	// Define area to fill
+		var area = d3.svg.area()
+		//.interpolate("basis")
+		.x(function(d) { return x(d.Date); }) 
+		.y0(height) 
+		.y1(function(d) { return y(d.Trips_count); 
+		});
+		
+
+		// Define the line
+		var valueline = d3.svg.line()
+			//.interpolate("basis")
+		    .x(function(d) { return x(d.Date); })
+		    .y(function(d) { return y(d.Trips_count); });
+
+		var valueline_T = d3.svg.line()
+			//.interpolate("basis")
+		    .x(function(d) { return x(d.Date); })
+		    .y(function(d) { return yT(d.Temperature); });
+
+		var valueline_MA = d3.svg.line()
+			//.interpolate("basis")
+		    .x(function(d) { return x(d.Date); })
+		    .y(function(d) { return y(d.M_Average); });		    
+
+	   // Define the div for the tooltip
+		var div = d3.select("body").append("div")	
+		    .attr("class", "tooltip")				
+		    .style("opacity", 0);		    
+		    
+		// Adds the svg canvas
+		var svg = d3.select("body")
+		    .append("svg")
+		        .attr("width", width + margin.left + margin.right)
+		        .attr("height", height + margin.top + margin.bottom)
+		    .append("g")
+		        .attr("transform", 
+		              "translate(" + margin.left + "," + margin.top + ")");
+ 			
+// Implementation Section
+//------------------------------------------------------------------------------------------------------------------------------
+		// Get the data
+		d3.csv("Trip_Overview.csv", function(error, data) {
+
+			Data = data;
+			if (error) { console.log(error); // 输出错误消息
+			} else { 
+				console.log(data); // 输出数据
+
+			    data.forEach(function(d) {
+			        d.Date = parseDate(d.Date);
+			        d.Trips_count = + d.Trips_count;
+			        d.Temperature = + d.Temperature;
+			        d.M_Average = + d.M_Average;
+			    });
+
+			    // Scale the range of the data
+			    x.domain(d3.extent(data, function(d) { return d.Date; }));
+			    y.domain([0, d3.max(data, function(d) { return Math.max(d.Trips_count);})]);
+			    yT.domain([0, d3.max(data, function(d) { return Math.max(d.Temperature);})]);
+
+
+			    // Add the Trips line
+			    svg.append("path")
+			        .attr("class", "line_P")
+			        .attr("d", valueline(data));		    
+
+			    // Draw the area
+			    svg.append("path") 
+				    .datum(data) 
+				    .attr("class", "area") 
+				    .attr("d", area);
+
+			    svg.append("path")
+			        .attr("class", "line_MA")
+			        .attr("d", valueline_MA(data))
+			        .style("stroke", "DimGray")
+			        .style("stroke-width", 1.5);
+			  
+				// Draw filter areas
+				data.forEach(function(d,i) { 
+
+					if(d.Weekdays == "Saturday" ){
+
+						svg.append("rect")
+							.attr("class", "weekend")
+							.attr("x", (i-0.3)*width/366)
+							.attr("y", 0)
+							.attr("width", "9px")
+							.attr("height", height)
+							.style("fill", "Gray")
+							.style("opacity", .5)
+							.attr("visibility", "hidden");
+					}
+
+					if(d.Weather != "normal" ){
+
+						svg.append("rect")
+							.attr("class", "weather")
+							.attr("x", (i-0.3)*width/366)
+							.attr("y", 0)
+							.attr("width", "4.5px")
+							.attr("height", height)
+							.style("fill", "#FF6347")
+							.style("opacity", .5)
+							.attr("visibility", "hidden");
+					}
+
+					if(d.Holiday != "normal" ){
+
+						svg.append("rect")
+							.attr("class", "holiday")
+							.attr("x", (i-0.3)*width/366)
+							.attr("y", 0)
+							.attr("width", "4.5px")
+							.attr("height", height)
+							.style("fill", "Aquamarine")
+							.style("opacity", .5)
+							.attr("visibility", "hidden");
+					}					
+
+
+				});
+		
+			    // Add Tooltips for trip count
+			    svg.selectAll("dot")	
+			        .data(data)			
+			    	.enter().append("circle")
+			    	.attr("class", "circle_trip")								
+			        .attr("r", 5)
+			        .style("opacity", 0)		
+			        .attr("cx", function(d) { return x(d.Date); })		 
+			        .attr("cy", function(d) { return y(d.Trips_count); })		
+			        .on("mouseover", function(d) {		
+			            div.transition()		
+			                .duration(10)		
+			                .style("opacity", .9)
+			                .style("height", "50px")
+			                .style("background", "grey");		
+			            div.html(formatTime(d.Date) + "<br/>"  + d.Trips_count + " trips" + "<br/>" + '(' + d.Weekdays + ')')	
+			                .style("left", (d3.event.pageX) + "px")		
+			                .style("top", (d3.event.pageY - 28) + "px")
+			                .style("font-weight", 600);	
+			            })					
+			        .on("mouseout", function(d) {		
+			            div.transition()		
+			                .duration(500)		
+			                .style("opacity", 0);	
+			        });
+
+			    // Add Tooltips for Temperature
+			    svg.selectAll("dot")	
+			        .data(data)			
+			    	.enter().append("circle")
+			    	.attr("class", "circle_T")								
+			        .attr("r", 5)
+			        .style("opacity", 0)		
+			        .attr("cx", function(d) { return x(d.Date); })		 
+			        .attr("cy", function(d) { return yT(d.Temperature); })		
+			        .on("mouseover", function(d) {		
+			            div.transition()		
+			                .duration(10)		
+			                .style("opacity", .8)
+			                .style("height", "30px")
+			                .style("background", "OrangeRed");
+
+			            div.html("Temperature:" + "<br/>" + d.Temperature + "℃")	
+			                .style("left", (d3.event.pageX) + "px")		
+			                .style("top", (d3.event.pageY - 28) + "px");	
+			            })					
+			        .on("mouseout", function(d) {		
+			            div.transition()		
+			                .duration(500)		
+			                .style("opacity", 0);	
+			        });
+
+	        	// Add Temperature Line
+			    svg.append("path")
+			        .attr("class", "line_T")
+			        .attr("d", valueline_T(data))
+			        .style("stroke", "OrangeRed")
+			        .style("stroke-width", 1.5);
+
+			    // Add the X Axis
+			    svg.append("g")
+			        .attr("class", "x axis")
+			        .attr("transform", "translate(0," + height + ")")
+			        .call(xAxis)
+			        .selectAll("text")	
+			            .style("text-anchor", "end")
+			            .attr("dx", "-.8em")
+			            .attr("dy", ".15em")
+			            .attr("transform", "rotate(-45)" );
+			    // Add X Axis Labels
+			    svg.append("text") 
+			        .attr("x", width/2) 
+			        .attr("y", height + margin.bottom)
+			        .attr("dy", "0em") 
+			        .style("text-anchor", "middle") 
+			        .text("Date")
+			        .style("font-size", "135%")
+			        .style("font-weight", "600");
+
+			    // Add the Y Axis
+			    svg.append("g")
+			        .attr("class", "y axis")
+			        .call(yAxis);
+
+			    // Add Y Axis Labels 
+			    svg.append("text")
+			        .attr("transform", "rotate(-90)")       
+			        .attr("x",0 - (height / 2))
+			        .attr("y", 0 - margin.left)
+			        .attr("dy", "1.5em")
+			        .style("text-anchor", "middle")
+			        .text("Trips")
+			        .style("font-size", "135%")
+			        .style("font-weight", "600");
+
+		        // Add the YT temperature Axis
+			    svg.append("g")
+			    	.attr("transform", "translate(" + width + " ,0)")
+			        .attr("class", "y axis")
+			        .style("fill", "Red")
+			        .call(yTAxis);
+
+			    // Add YT Axis Labels 
+			    svg.append("text")
+			        .attr("transform", "rotate(-90)")       
+			        .attr("x",0 - (height / 2))
+			        .attr("y", width + margin.right/3)
+			        .attr("dy", "1.5em")
+			        .style("text-anchor", "middle")
+			        .text("Temperature/℃")
+			        .style("font-size", "135%")
+			        .style("font-weight", "600");			        
+			    // Add Title
+		        svg.append("text") 
+		        .attr("x", (width / 2)) 
+		        .attr("y", 0 - (margin.top / 2)) 
+		        .attr("text-anchor", "middle") 
+		        .style("font-size", "22px") 
+		        .style("text-decoration", "underline") 
+		        .text("Total Trips");
+
+//-------------------------------------------------------------------------------------------------------------------------------		        // Make buttons
+	    		var reset = svg.append("rect")
+							    	.attr("class", "checkbox")
+							    	.attr("x", width*0.65)
+							    	.attr("y", height*1.29)
+							    	.style("fill", "lightsteelblue")
+				        			.on("click", function(){
+				        				d3.selectAll(".weekend")
+				        					.attr("visibility", "hidden");
+				        				d3.selectAll(".weather")
+				        					.attr("visibility", "hidden");
+				        				d3.selectAll(".holiday")
+				        					.attr("visibility", "hidden");
+				        			});
+				var weekend = svg.append("rect")
+							    	.attr("class", "checkbox")
+							    	.attr("x", width*0.7)
+							    	.attr("y", height*1.29)
+							    	.style("fill", "Gray")
+				        			.on("click", function(){
+				        				d3.selectAll(".weekend")
+				        					.attr("visibility", "visible")
+				        			})
+				        			.on("dblclick", function(){
+				        				d3.selectAll(".weekend")
+				        					.attr("visibility", "hidden")
+				        			});
+
+				var weather = svg.append("rect")
+			    	.attr("class", "checkbox")
+			    	.attr("x", width*0.75)
+			    	.attr("y", height*1.29)
+			    	.style("fill", "#FF6347")
+        			.on("click", function(){
+        				d3.selectAll(".weather")
+        					.attr("visibility", "visible")
+        			})
+        			.on("dblclick", function(){
+        				d3.selectAll(".weather")
+        					.attr("visibility", "hidden")
+        			});
+
+				var holiday = svg.append("rect")
+			    	.attr("class", "checkbox")
+			    	.attr("x", width*0.85)
+			    	.attr("y", height*1.29)
+			    	.style("fill", "Aquamarine")
+        			.on("click", function(){
+        				d3.selectAll(".holiday")
+        					.attr("visibility", "visible")
+        			})
+        			.on("dblclick", function(){
+        				d3.selectAll(".holiday")
+        					.attr("visibility", "hidden")
+        			});        			        			
+
+	    		var Tem = svg.append("rect") // For temperature line
+							    	.attr("class", "checkbox")
+							    	.attr("x", width*0.85)
+							    	.attr("y", height*0)
+							    	.style("fill", "OrangeRed")
+				        			.on("click", function(){
+				        				d3.selectAll(".line_T")
+				        					.attr("visibility", "visible")
+				        			})
+				        			.on("dblclick", function(){
+				        				d3.selectAll(".line_T")
+				        					.attr("visibility", "hidden")
+				        			});  
+
+	    		var MA = svg.append("rect") // for moving average line
+							    	.attr("class", "checkbox")
+							    	.attr("x", width*0.85)
+							    	.attr("y", height*0.08)
+							    	.style("fill", "DimGray")
+				        			.on("click", function(){
+				        				d3.selectAll(".line_MA")
+				        					.attr("visibility", "visible")
+				        			})
+				        			.on("dblclick", function(){
+				        				d3.selectAll(".line_MA")
+				        					.attr("visibility", "hidden")
+				        			});  
+
+		 // add buttons text
+
+				svg.append("text")
+			    	.attr("x", width*0.7)
+			    	.attr("y", height*1.27)
+			    	.text("Weekend")			
+	    			.attr("text-anchor", "middle")
+	    			.attr("font-size", "100%")
+	    			.attr("font-weight", 600);
+
+	 			svg.append("text")
+			    	.attr("x", width*0.65)
+			    	.attr("y", height*1.27)
+			    	.text("Reset")			
+	    			.attr("text-anchor", "middle")
+	    			.attr("font-size", "100%")
+	    			.attr("font-weight", 600);  			        			
+
+	 			svg.append("text")
+			    	.attr("x", width*0.75)
+			    	.attr("y", height*1.27)
+			    	.text("Rainy/Foggy/Windy")			
+	    			.attr("text-anchor", "left")
+	    			.attr("font-size", "100%")
+	    			.attr("font-weight", 600); 
+
+	 			svg.append("text")
+			    	.attr("x", width*0.85)
+			    	.attr("y", height*1.27)
+			    	.text("Holidays:Thanksgiving/Christmas/NewYear")			
+	    			.attr("text-anchor", "left")
+	    			.attr("font-size", "100%")
+	    			.attr("font-weight", 600);
+
+	 			svg.append("text")
+			    	.attr("x", width*0.87)
+			    	.attr("y", height*0.04)
+			    	.text("Temperature")			
+	    			.attr("text-anchor", "left")
+	    			.attr("font-size", "100%")
+	    			.attr("font-weight", 600);  
+
+	 			svg.append("text")
+			    	.attr("x", width*0.87)
+			    	.attr("y", height*0.12)
+			    	.text("Moving Average")			
+	    			.attr("text-anchor", "left")
+	    			.attr("font-size", "100%")
+	    			.attr("font-weight", 600);  	    				    			 			        			
+				        								        				
+
+		}});
+		</script>
+	</body>
+</html>
+
+ 
