@@ -1,0 +1,183 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Chord Diagram</title>
+<style>
+
+    body {
+      font: 10px sans-serif;
+    }
+
+    #tooltip {
+    width: 122px;
+    height: 116px;
+    bottom: 100px;
+    color: white;
+    opacity: .8;
+    background: #333;
+    padding-bottom: 5px;
+    border: 1px solid lightgrey;
+    border-radius: 5px;
+    position: absolute;
+    z-index: 10;
+    visibility: hidden;
+    white-space: nowrap;
+    pointer-events: none;
+    }
+
+</style>
+<script type="text/javascript" src="d3/d3.min.js"></script>
+
+</head>
+<body>
+
+    <div id="tooltip"></div>
+    <svg width="960" height="960"></svg>
+    <script type="text/javascript">
+
+        var station = ["SF Caltrain (Townsend at 4th)", "SF Caltrain2 (330 Townsend)", "Harry Bridges Plaza", "2nd at Townsend", "Steuart at Market", "Embarcadero at Sansome", "Temporary Transbay Terminal", "Townsend at 7th", "Market at Sansome", "Market at 10th", "Embarcadero at Folsom", "2nd at South Park", "Embarcadero at Bryant", "Howard at 2nd", "2nd at Folsom", "Beale at Market", "Market at 4th", "Powell Street BART", "Grant Avenue at Columbus Avenue", "Broadway St at Battery St", "Mechanics Plaza", "5th at Howard", "South Van Ness at Market", "Davis at Jackson", "Spear at Folsom", "Civic Center BART", "Commercial at Montgomery", "Embarcadero at Vallejo", "Powell at Post", "Clay at Battery", "Post at Kearney", "Yerba Buena Center of the Arts", "Golden Gate at Polk", "Washington at Kearney", "SF City Hall", "5th St at Folsom St", "Cyril Magnin St at Ellis St"];
+
+        var matrix = [[171, 55, 2593, 802, 1501, 823, 1686, 876, 1203, 890, 1409, 242, 629, 1300, 469, 953, 292, 772, 122, 517, 418, 607, 407, 987, 608, 292, 340, 506, 157, 611, 455, 440, 215, 132, 87, 18, 6], [36, 105, 1593, 306, 1414, 452, 1402, 2292, 1003, 1525, 1422, 276, 227, 1312, 460, 534, 341, 1054, 53, 406, 349, 1428, 418, 639, 474, 254, 295, 230, 101, 369, 370, 438, 406, 175, 178, 16, 5], [2362, 523, 631, 2531, 62, 2986, 244, 574, 456, 217, 103, 727, 542, 449, 390, 61, 280, 281, 219, 192, 266, 225, 49, 145, 107, 52, 111, 547, 138, 120, 186, 133, 51, 115, 48, 2, 2], [843, 292, 2781, 212, 1396, 385, 952, 861, 1337, 76, 607, 192, 141, 581, 339, 204, 195, 99, 94, 183, 243, 110, 50, 453, 315, 49, 160, 264, 104, 195, 101, 141, 25, 51, 59, 8, 1], [2482, 1059, 35, 2136, 243, 1994, 105, 523, 124, 74, 300, 351, 769, 280, 79, 17, 174, 131, 150, 432, 223, 148, 51, 95, 309, 84, 79, 449, 112, 203, 122, 124, 92, 105, 32, 3, 1], [711, 332, 1506, 478, 2605, 774, 591, 72, 403, 110, 661, 94, 496, 97, 41, 543, 302, 327, 201, 178, 397, 68, 206, 367, 169, 104, 115, 258, 184, 424, 107, 93, 151, 226, 27, 0, 6], [2270, 941, 207, 1233, 251, 492, 89, 705, 227, 340, 56, 270, 164, 276, 189, 98, 389, 144, 197, 482, 379, 712, 456, 141, 61, 239, 513, 614, 83, 405, 71, 206, 92, 73, 44, 1, 1], [317, 3341, 735, 565, 285, 81, 617, 170, 154, 408, 188, 114, 211, 526, 331, 51, 137, 189, 35, 16, 24, 125, 499, 60, 195, 1073, 55, 47, 49, 24, 82, 208, 145, 64, 43, 3, 2], [1341, 650, 665, 1039, 358, 483, 305, 125, 126, 228, 249, 1636, 96, 186, 553, 165, 188, 168, 297, 252, 58, 105, 129, 315, 154, 124, 179, 93, 72, 129, 18, 169, 96, 98, 119, 2, 0], [420, 3035, 146, 189, 385, 157, 209, 475, 508, 177, 17, 176, 22, 187, 158, 191, 606, 476, 51, 30, 168, 263, 74, 93, 116, 390, 122, 19, 96, 26, 374, 184, 177, 165, 43, 2, 9], [2384, 948, 213, 730, 132, 652, 36, 206, 237, 19, 126, 154, 417, 111, 29, 52, 69, 25, 114, 73, 127, 86, 26, 140, 24, 73, 56, 194, 26, 36, 37, 88, 13, 153, 13, 0, 1], [640, 244, 920, 231, 242, 136, 312, 246, 1710, 142, 133, 75, 56, 396, 154, 66, 176, 179, 140, 31, 79, 64, 69, 99, 98, 47, 94, 191, 146, 71, 244, 107, 26, 140, 18, 0, 0], [989, 255, 616, 297, 728, 932, 136, 298, 59, 25, 469, 56, 200, 65, 32, 204, 111, 39, 42, 126, 387, 19, 12, 104, 147, 52, 299, 680, 36, 146, 32, 60, 7, 44, 8, 2, 0], [1910, 1202, 341, 532, 345, 98, 114, 465, 345, 143, 114, 286, 85, 72, 24, 27, 198, 89, 57, 24, 59, 266, 86, 20, 54, 49, 69, 45, 93, 44, 103, 68, 36, 50, 69, 1, 0], [1171, 532, 621, 620, 137, 65, 412, 207, 1132, 166, 98, 240, 62, 103, 79, 56, 96, 181, 66, 44, 66, 140, 34, 58, 331, 84, 206, 44, 73, 55, 44, 115, 19, 68, 37, 0, 1], [1409, 570, 118, 447, 67, 607, 399, 41, 118, 139, 79, 272, 310, 49, 54, 86, 149, 129, 124, 600, 41, 80, 85, 153, 211, 48, 301, 201, 116, 46, 88, 81, 91, 36, 24, 3, 0], [1021, 532, 345, 238, 293, 371, 465, 117, 209, 523, 82, 226, 101, 78, 100, 154, 220, 89, 140, 82, 128, 289, 201, 223, 113, 276, 94, 74, 47, 84, 42, 65, 55, 142, 97, 20, 1], [334, 1563, 247, 155, 239, 190, 66, 472, 175, 783, 11, 69, 34, 40, 64, 168, 109, 197, 89, 23, 111, 220, 401, 29, 39, 178, 50, 56, 67, 68, 73, 38, 128, 163, 152, 21, 4], [407, 56, 211, 133, 357, 216, 461, 114, 821, 83, 510, 177, 50, 114, 74, 286, 340, 174, 146, 65, 165, 36, 49, 132, 239, 105, 331, 28, 177, 349, 119, 87, 31, 43, 49, 0, 0], [936, 394, 223, 296, 601, 185, 438, 28, 287, 35, 95, 27, 99, 34, 31, 477, 148, 54, 42, 76, 331, 21, 45, 181, 48, 43, 76, 45, 68, 155, 54, 35, 54, 16, 17, 0, 0], [741, 385, 138, 187, 107, 282, 216, 37, 56, 261, 222, 69, 320, 70, 22, 23, 238, 199, 65, 153, 111, 79, 188, 119, 155, 148, 227, 38, 285, 31, 88, 55, 88, 143, 53, 14, 0], [157, 1490, 172, 77, 346, 67, 535, 199, 97, 149, 40, 58, 14, 247, 149, 103, 299, 212, 44, 13, 75, 71, 76, 12, 73, 70, 19, 26, 40, 35, 223, 44, 100, 68, 36, 0, 0], [130, 1035, 102, 49, 138, 255, 284, 509, 305, 73, 26, 49, 13, 39, 55, 162, 354, 271, 25, 83, 127, 45, 136, 42, 153, 187, 65, 12, 56, 21, 298, 74, 84, 44, 94, 2, 1], [1048, 286, 103, 409, 83, 483, 241, 31, 247, 51, 128, 88, 118, 39, 32, 124, 214, 46, 70, 111, 107, 11, 36, 305, 218, 48, 154, 86, 75, 38, 105, 13, 11, 72, 9, 0, 0], [788, 457, 175, 503, 310, 203, 37, 170, 122, 145, 30, 92, 115, 133, 46, 67, 74, 45, 66, 77, 218, 76, 79, 183, 69, 58, 360, 62, 60, 79, 30, 82, 27, 59, 15, 0, 1], [162, 544, 111, 66, 172, 142, 227, 1026, 203, 249, 87, 54, 19, 30, 54, 89, 322, 156, 113, 19, 148, 138, 188, 47, 46, 111, 37, 35, 69, 43, 92, 45, 29, 111, 49, 9, 1], [646, 297, 134, 86, 74, 142, 393, 64, 352, 120, 73, 79, 336, 89, 26, 56, 105, 189, 42, 90, 239, 63, 71, 220, 206, 42, 50, 18, 122, 30, 102, 281, 23, 7, 100, 0, 2], [329, 151, 341, 204, 901, 456, 483, 66, 56, 13, 135, 152, 341, 43, 11, 129, 94, 49, 55, 26, 51, 34, 10, 66, 33, 18, 29, 220, 44, 44, 30, 35, 11, 41, 6, 0, 3], [285, 278, 175, 158, 155, 236, 67, 137, 141, 172, 44, 182, 80, 314, 81, 170, 65, 111, 140, 62, 112, 112, 90, 131, 111, 54, 114, 45, 203, 63, 137, 76, 46, 75, 61, 3, 2], [1056, 259, 171, 278, 53, 361, 351, 26, 97, 39, 36, 59, 78, 38, 18, 66, 103, 136, 308, 68, 73, 50, 15, 46, 87, 51, 17, 55, 47, 130, 61, 41, 28, 43, 12, 0, 0], [525, 502, 260, 98, 199, 131, 93, 103, 31, 153, 56, 212, 50, 186, 36, 75, 35, 86, 122, 43, 89, 109, 120, 112, 66, 56, 167, 36, 56, 62, 78, 57, 44, 251, 48, 0, 1], [498, 383, 113, 117, 98, 99, 81, 260, 72, 140, 34, 74, 54, 30, 22, 55, 34, 132, 109, 21, 32, 197, 87, 14, 53, 40, 207, 27, 52, 38, 44, 118, 29, 59, 34, 2, 1], [93, 543, 55, 47, 149, 117, 189, 284, 173, 232, 17, 16, 9, 19, 10, 202, 99, 123, 15, 100, 69, 151, 78, 8, 26, 49, 23, 9, 37, 27, 81, 112, 70, 32, 30, 13, 2], [121, 42, 131, 70, 65, 232, 120, 26, 192, 97, 99, 183, 45, 35, 16, 83, 141, 182, 52, 29, 134, 116, 43, 66, 47, 62, 23, 34, 53, 33, 81, 21, 57, 84, 25, 0, 4], [84, 295, 56, 82, 70, 111, 39, 92, 144, 42, 9, 23, 7, 37, 44, 32, 128, 99, 31, 8, 85, 40, 79, 24, 22, 44, 55, 14, 53, 25, 59, 30, 53, 44, 131, 4, 0], [4, 18, 3, 15, 10, 1, 0, 4, 1, 2, 0, 1, 0, 1, 3, 3, 20, 14, 2, 1, 8, 8, 5, 1, 8, 4, 1, 2, 0, 0, 9, 2, 17, 1, 2, 8, 1], [10, 2, 5, 0, 2, 3, 2, 7, 0, 5, 0, 1, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 2, 0, 0, 2, 1, 3, 2, 1, 2, 2, 4, 0, 0, 3, 24]];
+
+        var popularity_out = [23591,22358,16127,14099,13690,13424,13111,11169,10970,9936,7820,7722,7714,7583,7463,7372,7337,6826,6735,5695,5613,5436,5398,5240,5113,5043,4969,4710,4488,4357,4348,3460,3309,2844,2195,180,86];
+        var popularity_in = [28831,23596,16992,15616,15400,14573,12923,12397,11908,8046,7765,7606,7052,6848,6847,6312,6310,5832,5830,5697,5307,5185,5094,4736,4660,4650,4275,4260,4242,3968,3638,3199,3193,2631,1869,160,83];
+
+
+        var svg = d3.select("svg"),
+            width = +svg.attr("width"),
+            height = +svg.attr("height"),
+            outerRadius = Math.min(width, height) * 0.5 - 150,
+            innerRadius = outerRadius - 30;
+
+        // Define a chord
+        var chord = d3.chord() 
+            .padAngle(0.03)
+            .sortSubgroups(d3.descending);
+
+        // Define outline generator
+        var arc = d3.arc()
+            .innerRadius(innerRadius)
+            .outerRadius(outerRadius);
+        // Define ribbon generator
+        var ribbon = d3.ribbon()
+            .radius(innerRadius);
+
+        // Define color
+
+        var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+        var g = svg.append("g")
+            .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
+            .datum(chord(matrix));
+
+        // Generate groups("nodes")
+        var gOuter = g.append("g")
+            .selectAll(".outerPath")
+            .data(function(chords) { return chords.groups;})  
+            .enter()
+            .append("path")
+            .attr("class", "outerPath")
+            .style("fill", function(d) { return color(d.index); })
+            .style("stroke", function(d) { return d3.rgb(color(d.index)).darker(); })
+            .attr("d", arc);
+
+        g.selectAll(".outerText")
+                        //.data(chord(matrix).groups)
+                        .data(chord(matrix).groups)
+                        .enter()
+                        .append("text")
+                        .each(function(d,i) {
+                            d.angle = (d.startAngle + d.endAngle)/2;
+                            d.name = station[i];
+                        })
+                        .attr("class","outerText")
+                        .attr("text-anchor", function(d){
+                                return (d.angle > Math.PI ? "end" : "start");
+                        })
+                        .attr("font-size", "10px")
+                        .attr("font-weight", 600)
+                        .attr("dy","0.2em")
+                        .attr("transform", function(d){
+                                return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
+                                                  + "translate(" + (innerRadius + 26) + ")"
+                                                  + (d.angle > Math.PI ? "rotate(180)" : "");
+                        })
+                        .text(function(d){
+                            return d.name;
+                       }); 
+
+        // Generate inner ribbons 
+        var gInner = g.append("g");
+
+        gInner.selectAll(".ribbons")
+                .data(function(chords) { return chords; })
+                .enter()
+                .append("path")
+                .attr("class", "ribbons")
+                .attr("d", ribbon)
+                .style("fill", function(d) { return color(d.target.index); })
+                //.style("stroke", function(d) { return d3.rgb(color(d.target.index)).darker(); })
+                .style("fill-opacity", 0.1);
+
+       // Interact with outerPath (station nodes) 
+        d3.selectAll(".outerPath")
+                    .on("mouseover",fade(1))  
+                    .on("mouseout", fade(0.1)); //鼠标从节点上移开 
+
+        // Interact with ribbons (routes)
+        d3.selectAll(".ribbons")
+                    .on("mouseover", function(d){
+                        d3.select(this)
+                          .style("fill-opacity", 0.8);
+
+                        d3.select("#tooltip")
+                          .style("visibility", "visible")
+                          .style("width", "380px")
+                          .html(function(){return "<br/>Route Information:<br/><br/>\"" + station[d.source.index] + "\" to \"" + station[d.target.index] + "\" : " + matrix[d.source.index][d.target.index] + " trips <br/><br/>\"" +  station[d.target.index] + "\" to \"" + station[d.source.index] + "\" : "+ matrix[d.target.index][d.source.index] + "trips";})                      
+                          .style("top", function () { return (d3.event.pageY - 120)+"px"})
+                          .style("left", function () { return (d3.event.pageX - 10)+"px";});
+                    })     
+                    .on("mouseout", function(){
+                            d3.select(this)
+                              .style("fill-opacity", 0.1);
+
+                            d3.select("#tooltip")
+                              .style("visibility", "hidden")
+                    });
+
+        //------------------------------------------------------------------------------------
+        //Functions
+        function fade(opacity){ //fade chords accoding to outerPath mouseover
+            //返回一个function(g, i)
+            return function(g,i){
+                d3.select("#tooltip")
+                  .style("width", "222px")
+                  .style("visibility", function(){
+                    if (opacity > 0.5) {
+                        return "visible";
+                    } else {
+                        return "hidden";
+                    }
+                  })
+                  .html(" <br/> Station Information: <br/>" + "<br/>" +station[i] + "<br/><br/>" + popularity_out[i] + " Out-going Trips in Total" + "<br/>" + popularity_in[i] + " In-coming Trips in Total")
+                  .style("top", function () { return (d3.event.pageY - 120)+"px"})
+                  .style("left", function () { return (d3.event.pageX - 10)+"px";});
+
+                d3.selectAll(".ribbons")  
+                        .filter(function(d) {  //过滤器
+                            //没有连接到鼠标所在节点的弦才能通过
+                            return d.source.index == i || d.target.index == i; 
+                          
+                        })
+                        .transition()   //过渡
+                        .style("fill-opacity", opacity); //透明度
+            };
+
+        }
+
+    </script>
+</body>
+</html>
+
