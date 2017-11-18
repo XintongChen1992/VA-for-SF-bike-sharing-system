@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Leaflet</title>
+		<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+		<script type="text/javascript" src="Functions_homemade.js"></script>
+		<style type="text/css">
+			#mapid {
+				position: absolute;
+				top: 50px;
+				left: 20px;
+				width: 650px;
+				height: 500px;
+				right: 40px;
+			}
+
+			#availability {
+				position: absolute;
+				left: 750px;
+				width: 450px;
+				height: 280px;
+				right: 60px;
+			}
+	  		
+			svg {
+			    font: 10px sans-serif;
+			    shape-rendering: crispEdges;
+			  }
+
+			  .axis path,
+			  .axis line {
+			    fill: none;
+			    stroke: gray;
+			    stroke-width: 1;
+			   shape-rendering: crispEdges;
+			  }
+			 
+			  path.domain {
+			    stroke: none;
+			  }
+			 
+			  .y .tick line {
+			    stroke: #ddd;
+			  }
+
+		</style>
+
+		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css"
+   				integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ=="
+   				crossorigin=""/>
+    <!-- Make sure you put this AFTER Leaflet's CSS -->
+ 		<script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"
+   				integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log=="
+   				crossorigin=""></script>
+
+	</head>
+	<body>
+	  <div id="mapid" style="float:left"></div>
+	  <div id="availability">
+	    <div id="weekdays"></div>
+	    <div id ="weekends"></div>
+	  </div> 		 
+
+		<script type="text/javascript">
+
+			var mymap = L.map('mapid').setView([37.786305, -122.404966], 13.6);
+			// Add map tile
+
+			L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycT		A2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+				maxZoom: 15,
+				attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+					'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+					'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+				id: 'mapbox.streets'
+			}).addTo(mymap);
+
+            // Remove shadow
+			L.Icon.Default.prototype.options.shadowSize = [0,0];
+		
+		//add marker
+			IconSize(L.marker([37.795001, -122.39997]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(29); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Clay at Battery').addTo(mymap),898.165283982);
+			IconSize(L.marker([37.79728, -122.398436]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(23); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Davis at Jackson').addTo(mymap),1055.9444799);
+			IconSize(L.marker([37.794231, -122.402923]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(26); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Commercial at Montgomery').addTo(mymap),1007.52074027);
+			IconSize(L.marker([37.795425, -122.404767]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(33); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Washington at Kearney').addTo(mymap),627.814294831);
+			IconSize(L.marker([37.788975, -122.403452]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(30); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Post at Kearney').addTo(mymap),896.557115507);
+			IconSize(L.marker([37.799953, -122.398525]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(27); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Embarcadero at Vallejo').addTo(mymap),961.241225271);
+			IconSize(L.marker([37.790302, -122.390637]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(24); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Spear at Folsom').addTo(mymap),1033.25143586);
+			IconSize(L.marker([37.795392, -122.394203]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(2); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Harry Bridges Plaza (Ferry Building)').addTo(mymap),3001.29227824);
+			IconSize(L.marker([37.791464, -122.391034]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(10); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Embarcadero at Folsom').addTo(mymap),1516.95277601);
+			IconSize(L.marker([37.783871, -122.408433]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(17); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Powell Street BART').addTo(mymap),1339.33950223);
+			IconSize(L.marker([37.787152, -122.388013]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(12); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Embarcadero at Bryant').addTo(mymap),1498.01212508);
+			IconSize(L.marker([37.789756, -122.394643]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(6); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Temporary Transbay Terminal (Howard at Beale)').addTo(mymap),2462.3771538);
+			IconSize(L.marker([37.792251, -122.397086]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(15); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Beale at Market').addTo(mymap),1436.90172304);
+			IconSize(L.marker([37.781752, -122.405127]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(21); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('5th at Howard').addTo(mymap),1090.96681557);
+			IconSize(L.marker([37.77865, -122.418235]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(34); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('San Francisco City Hall').addTo(mymap),511.84747926);
+			IconSize(L.marker([37.781332, -122.418603]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(32); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Golden Gate at Polk').addTo(mymap),710.902999362);
+			IconSize(L.marker([37.80477, -122.403234]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(5); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Embarcadero at Sansome').addTo(mymap),2518.30567964);
+			IconSize(L.marker([37.780526, -122.390288]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(3); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('2nd at Townsend').addTo(mymap),2638.91831525);
+			IconSize(L.marker([37.785299, -122.396236]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(14); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('2nd at Folsom').addTo(mymap),1453.16209317);
+			IconSize(L.marker([37.786978, -122.398108]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(13); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Howard at 2nd').addTo(mymap),1474.6043395);
+			IconSize(L.marker([37.782259, -122.392738]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(11); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('2nd at South Park').addTo(mymap),1499.44160817);
+			IconSize(L.marker([37.771058, -122.402717]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(7); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Townsend at 7th').addTo(mymap),2115.37013401);
+			IconSize(L.marker([37.774814, -122.418954]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(22); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('South Van Ness at Market').addTo(mymap),1084.1767709);
+			IconSize(L.marker([37.776619, -122.417385]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(9); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Market at 10th').addTo(mymap),1895.05105297);
+			IconSize(L.marker([37.784878, -122.401014]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(31); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Yerba Buena Center of the Arts (3rd @ Howard)').addTo(mymap),737.884492661);
+			IconSize(L.marker([37.7766, -122.39547]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(1); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('San Francisco Caltrain 2 (330 Townsend)').addTo(mymap),4114.68091895);
+			IconSize(L.marker([37.776617, -122.39526]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(0); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('San Francisco Caltrain (Townsend at 4th)').addTo(mymap),4335.0);
+			IconSize(L.marker([37.788446, -122.408499]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(28); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Powell at Post (Union Square)').addTo(mymap),921.57306956);
+			IconSize(L.marker([37.781039, -122.411748]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(25); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Civic Center BART (7th at Market)').addTo(mymap),1020.74345884);
+			IconSize(L.marker([37.7979, -122.405942]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(18); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Grant Avenue at Columbus Avenue').addTo(mymap),1323.0791321);
+			IconSize(L.marker([37.794139, -122.394434]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(4); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Steuart at Market').addTo(mymap),2565.83599234);
+			IconSize(L.marker([37.7913, -122.399051]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(20); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Mechanics Plaza (Market at Battery)').addTo(mymap),1122.59412891);
+			IconSize(L.marker([37.786305, -122.404966]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(16); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Market at 4th').addTo(mymap),1430.64773452);
+			IconSize(L.marker([37.789625, -122.400811]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(8); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Market at Sansome').addTo(mymap),2079.81174218);
+			IconSize(L.marker([37.798541, -122.400862]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(19); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Broadway St at Battery St').addTo(mymap),1137.24633057);
+			IconSize(L.marker([37.780148, -122.403158]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(35); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('5th St at Folsom St').addTo(mymap),151.796426292);
+			IconSize(L.marker([37.785908, -122.408891]).on("click", function(){d3.selectAll('#availability svg').remove(); plot(36); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");}).bindTooltip('Cyril Magnin St at Ellis St').addTo(mymap),135.0);
+
+		</script>
+
+		<script type="text/javascript"> // Availability codes
+
+			var Station_name = ["San Francisco Caltrain (Townsend at 4th)", "San Francisco Caltrain 2 (330 Townsend)", "Harry Bridges Plaza (Ferry Building)", "2nd at Townsend", "Steuart at Market", "Embarcadero at Sansome", "Temporary Transbay Terminal (Howard at Beale)", "Townsend at 7th", "Market at Sansome", "Market at 10th", "Embarcadero at Folsom", "2nd at South Park", "Embarcadero at Bryant", "Howard at 2nd", "2nd at Folsom", "Beale at Market", "Market at 4th", "Powell Street BART", "Grant Avenue at Columbus Avenue", "Broadway St at Battery St", "Mechanics Plaza (Market at Battery)", "5th at Howard", "South Van Ness at Market", "Davis at Jackson", "Spear at Folsom", "Civic Center BART (7th at Market)", "Commercial at Montgomery", "Embarcadero at Vallejo", "Powell at Post (Union Square)", "Clay at Battery", "Post at Kearney", "Yerba Buena Center of the Arts (3rd @ Howard)", "Golden Gate at Polk", "Washington at Kearney", "San Francisco City Hall", "5th St at Folsom St", "Cyril Magnin St at Ellis St"];
+
+			var Station_id = [70,69,50,61,74,60,55,65,77,67,51,64,54,63,62,56,76,39,73,82,75,57,66,42,49,72,45,48,71,41,47,68,59,46,58,90,91];
+
+		function plot(i){
+			// Setup svg using Bostock's margin convention
+
+			var margin = {top: 30, right: 80, bottom: 29, left: 27};
+
+			var width = 480 - margin.left - margin.right,
+			    height = 250 - margin.top - margin.bottom;
+
+			var svg = d3.select("#weekdays")
+			  .append("svg")
+			  .attr("width", width + margin.left + margin.right)
+			  .attr("height", height + margin.top + margin.bottom)
+			  .append("g")
+			  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+			var parse = d3.time.format("%H:%M:%S").parse;
+
+			d3.csv("Weekdays_" + Station_id[i] + ".csv", function(error, data) {
+
+			      Data = data;
+			      if (error) { console.log(error); // 输出错误消息
+			      } else { 
+
+			          console.log(data); // 输出数据
+
+			          data.forEach(function(d) {
+			              d.time = parse(d.time);
+			              d.bikes_available = + d.bikes_available;
+			              d.docks_available = + d.docks_available;
+			          });
+
+
+			          // Transpose the data into layers
+			          var dataset = d3.layout.stack()(["bikes_available", "docks_available"].map(function(i) {
+			            return data.map(function(d) {
+			              return {x: d.time, y: d[i]};
+			            });
+			          }));
+
+
+			          // Set x, y and colors
+			          var x = d3.scale.ordinal()
+			            .domain(dataset[0].map(function(d) { return d.x; }))
+			            .rangeRoundBands([0, width-0], 0.15);
+
+			          var y = d3.scale.linear()
+			            .domain([0, d3.max(dataset, function(d) {  return d3.max(d, function(d) { return d.y0 + d.y; }); })])
+			            .range([height, 0]);
+
+			          var colors = ["#1E90FF", "#FF7F50"];
+
+
+			          // Define and draw axes
+			          var yAxis = d3.svg.axis()
+			            .scale(y)
+			            .orient("left")
+			            .ticks(6)
+			            .tickSize(-width, 0, 0)
+			            .tickFormat( function(d) { return d } );
+
+			          var xAxis = d3.svg.axis()
+			            .scale(x).ticks(24)
+			            .orient("bottom")
+			            .tickFormat(d3.time.format("%H:%M"));
+
+			          svg.append("g")
+			            .attr("class", "y axis")
+			            .call(yAxis)
+			            .selectAll("text")
+			            .style("font-weight", 550)
+			            .style("font-size", "75%");            
+
+			          svg.append("g")
+			            .attr("class", "x axis")
+			            .attr("transform", "translate(0," + height + ")")
+			            .call(xAxis)
+			            .selectAll("text")  
+			            .style("text-anchor", "start")
+			            .style("font-weight", 500)
+			            .style("font-size", "55%")
+			            .attr("dx", ".4em")
+			            .attr("dy", ".075em")
+			            .attr("transform", "rotate(55)" );
+
+			          // Add X Axis Labels
+			          svg.append("text") 
+			              .attr("x", width/2) 
+			              .attr("y", height + margin.bottom)
+			              .attr("dy", "-.22em") 
+			              .style("text-anchor", "middle") 
+			              .text("Time of a Day")
+			              .style("font-size", "75%")
+			              .style("font-weight", "500");  
+			                        
+			          // Add Y Axis Labels 
+			          svg.append("text")
+			              .attr("transform", "rotate(-90)")       
+			              .attr("x",0 - (height / 2))
+			              .attr("y", 0 - margin.left)
+			              .attr("dy", ".75em")
+			              .style("text-anchor", "middle")
+			              .text("Number of Available Bikes/Docks")
+			              .style("font-size", "70%")
+			              .style("font-weight", "500");
+
+			          // Add Title
+			            svg.append("text") 
+			            .attr("x", (width / 2)) 
+			            .attr("y", 0 - (margin.top / 4)) 
+			            .attr("text-anchor", "middle") 
+			            .style("font-size", "11px") 
+			            .style("text-decoration", "underline") 
+			            .text(function(){return "Availability of " + "\"" + Station_name[i] + "\"" + " (Weekdays)";});
+			          // Create groups for each series, rects for each segment 
+			          var groups = svg.selectAll("g.cost")
+			            .data(dataset)
+			            .enter().append("g")
+			            .attr("class", "cost")
+			            .style("fill", function(d, i) { return colors[i]; });
+
+			          var rect = groups.selectAll("rect")
+			            .data(function(d) { return d; })
+			            .enter()
+			            .append("rect")
+			            .attr("x", function(d) { return x(d.x); })
+			            .attr("y", function(d) { return y(d.y0 + d.y); })
+			            .attr("height", function(d) { return y(d.y0) - y(d.y0 + d.y); })
+			            .attr("width", x.rangeBand())
+			            .on("mouseover", function() { tooltip.style("display", null); })
+			            .on("mouseout", function() { tooltip.style("display", "none"); })
+			            .on("mousemove", function(d) {
+			              var xPosition = d3.mouse(this)[0] - 15;
+			              var yPosition = d3.mouse(this)[1] - 25;
+			              tooltip.attr("transform", "translate(" + xPosition + "," + yPosition + ")");
+			              tooltip.select("text").text(function(){return d.y.toFixed(1)});
+			            });
+
+
+			          // Draw legend
+			          var legend = svg.selectAll(".legend")
+			            .data(colors)
+			            .enter().append("g")
+			            .attr("class", "legend")
+			            .attr("transform", function(d, i) { return "translate(30," + i * 19 + ")"; });
+			           
+			          legend.append("rect")
+			            .attr("x", width - 9)
+			            .attr("width", 9)
+			            .attr("height", 9)
+			            .style("fill", function(d, i) {return colors.slice().reverse()[i];});
+			           
+			          legend.append("text")
+			            .attr("x", width + 2.5)
+			            .attr("y", 4.5)
+			            .attr("dy", ".35em")
+			            .style("text-anchor", "start")
+			            .text(function(d, i) { 
+			              switch (i) {
+			                case 0: return "Available Docks";
+			                case 1: return "Available Bikes";
+			              }
+			            })
+			            .style("font-size", "60%");
+
+
+			          // Prep the tooltip bits, initial display is hidden
+			          var tooltip = svg.append("g")
+			            .attr("class", "tooltip")
+			            .style("display", "none");
+			              
+			          tooltip.append("rect")
+			            .attr("width", 20)
+			            .attr("height", 15)
+			            .attr("fill", "white")
+			            .style("opacity", 0.5);
+
+			          tooltip.append("text")
+			            .attr("x", 7.5)
+			            .attr("dy", "1.1em")
+			            .style("text-anchor", "middle")
+			            .attr("font-size", "9px")
+			            .attr("font-weight", "bold");          
+
+			      }
+			    });
+			//--------------------------------------------------------------------------------------------------------
+			// Plot Weekend
+			var svg2 = d3.select("#weekends")
+			.append("svg")
+			.attr("width", width + margin.left + margin.right)
+			.attr("height", height + margin.top + margin.bottom)
+			.append("g")
+			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+			d3.csv("Weekends_" + Station_id[i] + ".csv", function(error, data) {
+
+			    Data2 = data;
+			    if (error) { console.log(error); // 输出错误消息
+			    } else { 
+
+			        console.log(data); // 输出数据
+
+			        data.forEach(function(d) {
+			            d.time = parse(d.time);
+			            d.bikes_available = + d.bikes_available;
+			            d.docks_available = + d.docks_available;
+			        });
+
+
+			        // Transpose the data into layers
+			        var dataset = d3.layout.stack()(["bikes_available", "docks_available"].map(function(i) {
+			          return data.map(function(d) {
+			            return {x: d.time, y: d[i]};
+			          });
+			        }));
+
+
+			        // Set x, y and colors
+			        var x = d3.scale.ordinal()
+			          .domain(dataset[0].map(function(d) { return d.x; }))
+			          .rangeRoundBands([0, width-0], 0.15);
+
+			        var y = d3.scale.linear()
+			          .domain([0, d3.max(dataset, function(d) {  return d3.max(d, function(d) { return d.y0 + d.y; }); })])
+			          .range([height, 0]);
+
+			        var colors = ["#1E90FF", "#FF7F50"];
+
+
+			        // Define and draw axes
+			        var yAxis = d3.svg.axis()
+			          .scale(y)
+			          .orient("left")
+			          .ticks(6)
+			          .tickSize(-width, 0, 0)
+			          .tickFormat( function(d) { return d } );
+
+			        var xAxis = d3.svg.axis()
+			          .scale(x).ticks(24)
+			          .orient("bottom")
+			          .tickFormat(d3.time.format("%H:%M"));
+
+			        svg2.append("g")
+			          .attr("class", "y axis")
+			          .call(yAxis)
+			          .selectAll("text")
+			          .style("font-weight", 550)
+			          .style("font-size", "75%");            
+
+			        svg2.append("g")
+			          .attr("class", "x axis")
+			          .attr("transform", "translate(0," + height + ")")
+			          .call(xAxis)
+			          .selectAll("text")  
+			          .style("text-anchor", "start")
+			          .style("font-weight", 500)
+			          .style("font-size", "55%")
+			          .attr("dx", ".4em")
+			          .attr("dy", ".075em")
+			          .attr("transform", "rotate(55)" );
+
+			        // Add X Axis Labels
+			        svg2.append("text") 
+			            .attr("x", width/2) 
+			            .attr("y", height + margin.bottom)
+			            .attr("dy", "-.22em") 
+			            .style("text-anchor", "middle") 
+			            .text("Time of a Day")
+			            .style("font-size", "75%")
+			            .style("font-weight", "500");  
+			                      
+			        // Add Y Axis Labels 
+			        svg2.append("text")
+			            .attr("transform", "rotate(-90)")       
+			            .attr("x",0 - (height / 2))
+			            .attr("y", 0 - margin.left)
+			            .attr("dy", ".75em")
+			            .style("text-anchor", "middle")
+			            .text("Number of Available Bikes/Docks")
+			            .style("font-size", "70%")
+			            .style("font-weight", "500");
+
+			        // Add Title
+			          svg2.append("text") 
+			          .attr("x", (width / 2)) 
+			          .attr("y", 0 - (margin.top / 4)) 
+			          .attr("text-anchor", "middle") 
+			          .style("font-size", "11px") 
+			          .style("text-decoration", "underline") 
+			          .text(function(){return "Availability of " + "\"" + Station_name[i] + "\""  + " (Weekends)";});
+			        // Create groups for each series, rects for each segment 
+			        var groups = svg2.selectAll("g.cost")
+			          .data(dataset)
+			          .enter().append("g")
+			          .attr("class", "cost")
+			          .style("fill", function(d, i) { return colors[i]; });
+
+			        var rect = groups.selectAll("rect")
+			          .data(function(d) { return d; })
+			          .enter()
+			          .append("rect")
+			          .attr("x", function(d) { return x(d.x); })
+			          .attr("y", function(d) { return y(d.y0 + d.y); })
+			          .attr("height", function(d) { return y(d.y0) - y(d.y0 + d.y); })
+			          .attr("width", x.rangeBand())
+			          .on("mouseover", function() { tooltip.style("display", null); })
+			          .on("mouseout", function() { tooltip.style("display", "none"); })
+			          .on("mousemove", function(d) {
+			            var xPosition = d3.mouse(this)[0] - 15;
+			            var yPosition = d3.mouse(this)[1] - 25;
+			            tooltip.attr("transform", "translate(" + xPosition + "," + yPosition + ")");
+			            tooltip.select("text").text(function(){return d.y.toFixed(1)});
+			          });
+
+
+			        // Draw legend
+			        var legend = svg2.selectAll(".legend")
+			          .data(colors)
+			          .enter().append("g")
+			          .attr("class", "legend")
+			          .attr("transform", function(d, i) { return "translate(30," + i * 19 + ")"; });
+			         
+			        legend.append("rect")
+			          .attr("x", width - 9)
+			          .attr("width", 9)
+			          .attr("height", 9)
+			          .style("fill", function(d, i) {return colors.slice().reverse()[i];});
+			         
+			        legend.append("text")
+			          .attr("x", width + 2.5)
+			          .attr("y", 4.5)
+			          .attr("dy", ".35em")
+			          .style("text-anchor", "start")
+			          .text(function(d, i) { 
+			            switch (i) {
+			              case 0: return "Available Docks";
+			              case 1: return "Available Bikes";
+			            }
+			          })
+			          .style("font-size", "60%");
+
+
+			        // Prep the tooltip bits, initial display is hidden
+			        var tooltip = svg2.append("g")
+			          .attr("class", "tooltip")
+			          .style("display", "none");
+			            
+			        tooltip.append("rect")
+			          .attr("width", 20)
+			          .attr("height", 15)
+			          .attr("fill", "white")
+			          .style("opacity", 0.5);
+
+			        tooltip.append("text")
+			          .attr("x", 7.5)
+			          .attr("dy", "1.1em")
+			          .style("text-anchor", "middle")
+			          .attr("font-size", "9px")
+			          .attr("font-weight", "bold");          
+
+			    }
+			  });
+		}
+		//.on("click", function(){d3.selectAll('#availability svg').remove(); plot(); d3.select("#availability").style("visibility", "visible");}).on("dblclick", function(){d3.select("#availability").style("visibility", "hidden");})
+			</script>
+
+	</body>
+</html>
+
+ 
