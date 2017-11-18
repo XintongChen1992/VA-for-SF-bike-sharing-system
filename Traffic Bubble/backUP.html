@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<head>
+    <title>Traffic Evolvement</title>
+    <link rel="stylesheet" href="style/style.css" type="text/css" media="screen" />
+	<meta charset="utf-8">
+
+  <style type="text/css">
+
+    .tooltip { 
+        position: absolute;     
+        text-align: center;     
+        width: 20px;         
+        height: 20px;         
+        padding: 2px;       
+        font: 6px sans-serif;    
+        background: none;   
+        border-radius: 8px;     
+        pointer-events: none;     
+    }
+  </style>
+</head>
+
+<body>
+	
+<div id="main-wrapper">
+	<div id="chart"></div>
+</div><!-- @end #main-wrapper -->
+
+
+<script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+
+<script>
+var margin = {top: 16, right: 0, bottom: 0, left: 0},
+    width = 1000 - margin.left - margin.right,
+    height = 700 - margin.top - margin.bottom;
+
+var node_radius = 5,
+    padding = .3,
+    cluster_padding = 10,
+    num_nodes = 150;
+
+var svg = d3.select("#chart").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+// Foci
+var foci = {
+	"top": { x: width/2, y: 70, color: "#BA55D3" },  
+	"top_L": { x: 120, y: 310, color: "#3CB371" }, 
+	"top_R": { x: 830, y: 310, color: "#1E90FF" },
+  "bottom_L": { x: 305, y: 600, color: "#FF8C00" },
+  "bottom_R": { x: 725, y: 600, color: "#808080" },
+  "middle": {x: width/2, y: height/2, color: "#eb494f"}
+};
+// station names for convinence
+var names = ["Harry Bridges Plaza", "SF Caltrain2 (330 Townsend)", "2nd at Townsend", "Embarcadero at Sansome", "Steuart at Market", "SF Caltrain(Townsend at 4th)"];
+// Create anchors for each station
+var anchor = svg.append("g")
+                .attr("class", "anchor");
+
+anchor.selectAll("rect")
+                .data(function(){return d3.keys(foci);})
+                .enter().append("rect")
+                .attr("height", 12)
+                .attr("width", 40)                       
+                .attr("x", function(d){return foci[d].x - 20;})
+                .attr("y", function(d){return foci[d].y + 30;})
+                .style("fill", function(d){return foci[d].color;})
+                .style("opacity", 0.7);
+// Create anchor name
+var station = svg.append("g")
+                  .attr("class", "anchor-name");
+
+station.selectAll("text")
+        .data(function(){return d3.keys(foci);})
+        .enter().append("text")
+        .attr("x", function(d){return foci[d].x - 20;})
+        .attr("y", function(d){return foci[d].y + 57;})
+        .text(function(d,i){return names[i];})
+        .style("font-size", "12px")
+        .style("text-anchor", "middle")
+        .style("font-weight", 550);
+
+// Create clock
+var clock = svg.append("g")
+                  .attr("class", "clock"); 
+
+ clock.append("text")
+        .attr("x", 10)
+        .attr("y", 50)
+        .text("Time ")
+        .style("font-size", "25px")
+        .style("text-anchor", "left")
+        .style("font-weight", 600);
+
+
+//----------------------------------------------------------------------------------------------------------------------
+// Create node objects
+var nodes = d3.range(0, num_nodes+25).map(function(o, i) {
+  if (i <= num_nodes/6){
+      return {
+      id: "bike" + i,
+      x: foci.top.x + Math.random(),
+      y: foci.top.y + Math.random(),
+      radius: node_radius,
+      choice: "top",
+    };
+  } else if (i <= num_nodes/6*2){
+      return {
+        id: "bike" + i,
+        x: foci.top_L.x + Math.random(),
+        y: foci.top_L.y + Math.random(),
+        radius: node_radius,
+        choice: "top_L",
+      };
+  } else if (i <= num_nodes/6*3){
+      return {
+        id: "bike" + i,
+        x: foci.top_R.x + Math.random(),
+        y: foci.top_R.y + Math.random(),
+        radius: node_radius,
+        choice: "top_R",
+      };
+    } else if (i <= num_nodes/6*4){
+      return {
+        id: "bike" + i,
+        x: foci.bottom_L.x + Math.random(),
+        y: foci.bottom_L.y + Math.random(),
+        radius: node_radius,
+        choice: "bottom_L",
+      };
+    } else if (i <= num_nodes/6*5){
+      return {
+        id: "bike" + i,
+        x: foci.bottom_R.x + Math.random(),
+        y: foci.bottom_R.y + Math.random(),
+        radius: node_radius,
+        choice: "bottom_R",
+      };
+    } else {
+      return {
+        id: "bike" + i,
+        x: foci.middle.x + Math.random(),
+        y: foci.middle.y + Math.random(),
+        radius: node_radius,
+        choice: "middle",
+      };
+    }
+});
+//----------------------------------------------------------------------------------------------------------------------------
+// Force-directed layout
+var force = d3.layout.force()
+	.nodes(nodes)
+	.size([width, height])
+	.gravity(0)
+	.charge(0)
+	.friction(.91)
+	.on("tick", tick)
+	.start();
+
+//Define tooltips
+var div = d3.select("body").append("div") 
+        .attr("class", "tooltip")       
+        .style("opacity", 0);
+
+// Draw circle for each node.
+var circle = svg.selectAll("circle")
+	.data(nodes)
+  .enter().append("circle")
+	.attr("id", function(d) { return d.id; })
+	.attr("class", "node")
+	.style("fill", function(d) { return foci[d.choice].color; })
+   .on("mouseover", function(d){ // add tooltips for each node
+      div.attr("x", d.x)
+          .attr("y", d.y)
+          .style("opacity", .9);
+
+      div.text(d.id)
+          .style("font-size", node_radius*2+"px")
+          .style("font-weight", 600)
+          .style("left", (d3.event.pageX) + "px")   
+          .style("top", (d3.event.pageY-15) + "px");
+    })
+    .on("mouseout", function(d) {   
+              div.style("opacity", 0); 
+          });
+    
+
+// For smoother initial transition to settling spots.
+circle.transition()
+	.duration(900)
+	.delay(function(d,i) { return i * 5; })
+	.attrTween("r", function(d) {
+		var i = d3.interpolate(0, d.radius);
+		return function(t) { return d.radius = i(t); };
+	});
+
+//---------------------------------------------------------------------------------------------------- 
+// Run function periodically to make things move.
+var timeout;
+var clockFormat = d3.time.format("%H:%M").parse("00:00");
+var StepLimit = 144;
+var interval = 1*1000; // milisecond
+var counter = 36;
+
+timeout = setTimeout(timer, interval); // to trigger the timer function
+
+function timer() {
+    if (counter == StepLimit){return;} // set a step limit
+    counter = counter + 1;
+    clock.select("text").text(function(){return "Time" + "  "+ clockDisp(StepLimit, counter);});
+    // Random place for a node to go
+    var choices = d3.keys(foci);
+    var foci_index = Math.floor( Math.random() * choices.length );
+    var choice = choices[foci_index];
+    
+    // Update random node
+    var random_index = Math.floor( Math.random() * nodes.length );
+  	nodes[random_index].cx = foci[choice].x;
+  	nodes[random_index].cy = foci[choice].y;
+  	nodes[random_index].choice = choice;
+    
+    force.resume(); //restart simulation
+    
+    // Run it again in a few seconds.
+    timeout = setTimeout(timer, interval);
+}
+//--------------------------------------------------------------------------------------------------------------------
+// Functions
+
+function clockDisp (StepLimit, counter) {
+  var step = 24*60/StepLimit;
+  var time = step * counter;
+  var hour = Math.floor(time / 60);
+  var minute = time - hour*60;
+  // format number to be double digit
+  hour = n(hour);
+  minute = n(minute);
+  if (hour < 12){
+    return hour + ":" + minute + " am";
+  } else{
+     return hour + ":" + minute; 
+   }
+}
+
+// format time
+function n(n){
+    return n > 9 ? "" + n: "0" + n;
+}
+// Force-directed boiler plate functions
+//
+function tick(e) {
+  circle
+	.each(gravity(.05 * e.alpha))
+  	.each(collide(.4))
+  	//.style("fill", function(d) { return foci[d.choice].color; })
+    .attr("cx", function(d) { return d.x; })
+    .attr("cy", function(d) { return d.y; });
+}
+
+
+// Move nodes toward cluster focus.
+function gravity(alpha) {
+  return function(d) {
+    d.y += (foci[d.choice].y - d.y) * alpha;
+    d.x += (foci[d.choice].x - d.x) * alpha;
+  };
+}
+
+
+
+// Resolve collisions between nodes.
+function collide(alpha) {
+  var quadtree = d3.geom.quadtree(nodes);
+  return function(d) {
+	  var r = d.radius + node_radius + Math.max(padding, cluster_padding),
+        nx1 = d.x - r,
+        nx2 = d.x + r,
+        ny1 = d.y - r,
+        ny2 = d.y + r;
+    quadtree.visit(function(quad, x1, y1, x2, y2) {
+      if (quad.point && (quad.point !== d)) {
+        var x = d.x - quad.point.x,
+            y = d.y - quad.point.y,
+            l = Math.sqrt(x * x + y * y),
+            r = d.radius + quad.point.radius + (d.choice === quad.point.choice ? padding : cluster_padding);
+        if (l < r) {
+          l = (l - r) / l * alpha;
+          d.x -= x *= l;
+          d.y -= y *= l;
+          quad.point.x += x;
+          quad.point.y += y;
+        }
+      }
+      return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+    });
+  };
+}    
+
+
+</script>
+
+</body>
